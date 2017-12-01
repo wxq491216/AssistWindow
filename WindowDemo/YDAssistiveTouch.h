@@ -25,6 +25,8 @@ typedef NS_ENUM(NSUInteger, YDAssistiveTouchStatus){
 
 -(void)showWindow;
 
+-(void)closeWindow;
+
 @end
 
 

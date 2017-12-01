@@ -8,7 +8,6 @@
 
 #import "YDAssistiveTouch.h"
 
-
 //浮动框大小
 #define ASSIST_WIDTH   44
 #define ASSIST_HEIGHT  44
@@ -50,7 +49,10 @@
         self.clipsToBounds = YES;
         self.opaque = NO;
         self.hidden = YES;
-        self.windowStatus = AssistWindow;
+        _windowStatus = AssistWindow;
+        CGRect frame = [self rectOfWindow:AssistWindow];
+        self.frame = frame;
+        self.toolBgView.frame = CGRectMake(0, 0, frame.size.width, frame.size.height);
         
         self.toolPopup = NO;
         [self setUpNavigationTools];
@@ -69,6 +71,9 @@
 
 -(void)setWindowStatus:(YDAssistiveTouchStatus)windowStatus
 {
+    if (self.windowStatus == windowStatus){
+        return;
+    }
     CGRect newWindowFrame = [self rectOfWindow:windowStatus];
     CGRect oldWindowFrame = self.frame;
     _windowStatus = windowStatus;
@@ -186,7 +191,7 @@
     __block int index = 0;
     for (int i = 0; i < [self.tools count]; i++) {
         UIImageView* subView = [self.tools objectAtIndex:i];
-        [UIView animateWithDuration:0.25f animations:^{
+        [UIView animateWithDuration:0.2f animations:^{
             if (direction == 1) {
                 [subView setFrame:CGRectMake(0, 0, ASSIST_WIDTH, ASSIST_HEIGHT)];
             }else if (direction == 0){
@@ -336,13 +341,17 @@
 -(void)closeWindow
 {
     if ([self open]) {
+        if (self.toolPopup) {
+            [self pullBack];
+        }
         [UIView animateWithDuration:0.2f animations:^{
             self.transform = CGAffineTransformScale(self.transform, 0.2f, 0.2f);
         } completion:^(BOOL finished) {
             self.transform = CGAffineTransformIdentity;
             [self setRootViewController:nil];
             [self setWindowStatus:AssistWindow];
-            self.alpha = 1.0f;
+//            [self.toolBgView setHidden:NO];
+//            self.alpha = 1.0f;
             [self windowMoveSide];
         }];
     }
@@ -350,12 +359,17 @@
 
 -(void)windowMoveSide
 {
+    if (self.windowStatus != AssistWindow) {
+        return;
+    }
     [self.toolBgView setUserInteractionEnabled:NO];
     CGPoint center = [self sidePoint];
     [UIView animateWithDuration:0.2f delay:0.1f options:0 animations:^{
         self.center = center;
     } completion:^(BOOL finished) {
-        self.alpha = 0.5f;
+        if (self.windowStatus == AssistWindow) {
+            self.alpha = 0.5f;
+        }
         [self.toolBgView setUserInteractionEnabled:YES];
     }];
 }
